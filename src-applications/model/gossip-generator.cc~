@@ -135,7 +135,7 @@ GossipGenerator::SendMessage(Ipv4Address src, Ipv4Address dest, int type)
   NS_LOG_INFO("GossipGenerator::SendMessage " << src << " -> " << dest << " Type:" << type);
   NS_LOG_INFO(" Time: " << Simulator::Now ().GetSeconds () << "s");
 
-  //SentMessages++;
+  SentMessages++;
   Ipv4Header header = Ipv4Header ();
   header.SetDestination (dest);
   header.SetPayloadSize (0);

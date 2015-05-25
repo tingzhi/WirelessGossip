@@ -54,22 +54,22 @@ NS_LOG_COMPONENT_DEFINE ("GenericTopologyCreation");
 
 class simstats {
     double time;
-    int hops;
+    double hops;
     double avgMsg;
   public:
-    simstats(double, int, double);
-    int getHops(void);
+    simstats(double, double, double);
+    double getHops(void);
     double getTime(void);
     double getAvgMsg(void);
 }; 
 
-simstats::simstats (double t, int h, double msg) {
+simstats::simstats (double t, double h, double msg) {
     time = t;
     hops = h;
     avgMsg = msg;
 }
 
-int simstats::getHops(void){
+double simstats::getHops(void){
     return hops;
 }
 
@@ -169,26 +169,7 @@ simstats simulation(char *filename) {
                                            "LayoutType", StringValue ("RowFirst"));
             mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
             mobility.Install (nodes);
-	    /*
-            // Enable OLSR
-            OlsrHelper olsr;
-            Ipv4StaticRoutingHelper staticRouting;
             
-            Ipv4ListRoutingHelper list;
-            list.Add (staticRouting, 0);
-            list.Add (olsr, 10);
-            
-            stack.SetRoutingHelper (list); // has effect on the next Install ()
-            */
-            /*
-            MobilityHelper mobility;
-            Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
-            positionAlloc->Add (Vector (0.0, 0.0, 0.0));
-            positionAlloc->Add (Vector (5.0, 0.0, 0.0));
-            mobility.SetPositionAllocator (positionAlloc);
-            mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
-            mobility.Install (nodes);
-            */
             stack.Install (nodes);
             
             NS_LOG_INFO ("Assign IP Addresses.");
@@ -224,37 +205,42 @@ simstats simulation(char *filename) {
         ii->SetGossipInterval(GossipInterval);
         ii->SetSolicitInterval(SolicitInterval);
     }
-
-    Ptr<GossipGenerator> a = GetGossipApp(nodes.Get(0));
+    int startNode = rand() % NodeNumber;
+    Ptr<GossipGenerator> a = GetGossipApp(nodes.Get(startNode));
     a->SetCurrentValue( 2 );
     //a->SendMessage_debug( src,dest, TYPE_ACK );
 
     Simulator::Run ();
 
     NS_LOG_INFO(endl << " ---- Print results ---" << endl);
-    int MaxHops = 0;
+    //int MaxHops = 0;
+    double avgHops = 0;
     Time MaxTime = Seconds(0);
     double AvgMessagesPerNode = 0;
     for ( int i=0; i<NodeNumber;++i) {
         Ptr<GossipGenerator> ii = GetGossipApp(nodes.Get(i));
-        if (MaxHops < ii->GetPacketHops()){
-            MaxHops = ii->GetPacketHops();
-        }
+        //if (MaxHops < ii->GetPacketHops()){
+        //    MaxHops = ii->GetPacketHops();
+        //}
         if (MaxTime.Compare(ii->GetReceivedDataTime()) == -1){
             MaxTime = ii->GetReceivedDataTime();
         }
+	avgHops = avgHops + ii->GetPacketHops();
         AvgMessagesPerNode += ii->GetSentMessages();
         NS_LOG_INFO("Node " << i << ": ");
-        NS_LOG_INFO(" * Sent icmp messages   : " << ii->GetSentMessages());
+        NS_LOG_INFO(" * Sent data messages   : " << ii->GetSentMessages());
         NS_LOG_INFO(" * Hops of data message : " << ii->GetPacketHops());
         NS_LOG_INFO(" * Time of data received: " << ii->GetReceivedDataTime().GetSeconds() << "s");
     }
+    avgHops = avgHops/NodeNumber;
     AvgMessagesPerNode /= NodeNumber;
     NS_LOG_INFO(endl << "Simulation terminated after " << Simulator::Now().GetSeconds() << "s");
-    NS_LOG_INFO("Max hops: " << MaxHops);
+    //NS_LOG_INFO("Max hops: " << MaxHops);
+    NS_LOG_INFO("Average hops per node: " << avgHops);
     NS_LOG_INFO("Average amount of sent messages per node: " << AvgMessagesPerNode);
     NS_LOG_INFO("Time until information was spread: " << MaxTime.GetSeconds() << "s" << endl);
-    simstats ret(MaxTime.GetSeconds(),MaxHops,AvgMessagesPerNode);
+    //simstats ret(MaxTime.GetSeconds(),MaxHops,AvgMessagesPerNode);
+    simstats ret(MaxTime.GetSeconds(), avgHops, AvgMessagesPerNode);
     Simulator::Destroy ();
     return ret;
 }
@@ -322,10 +308,10 @@ int main(int argc, char *argv[]) {
     avgfile = fopen(newAvgMsgFile, "a+");
 
     if (timefile != NULL && hopfile != NULL && avgfile != NULL){
-      for (int i = 0; i < 1; i++){
+      for (int i = 0; i < 10; i++){
         simstats results = simulation(newTopoFile);
         fprintf(timefile,"%f\n", results.getTime());
-        fprintf(hopfile,"%d\n", results.getHops());
+        fprintf(hopfile,"%f\n", results.getHops());
         fprintf(avgfile,"%f\n", results.getAvgMsg());
         sleep(1);
       }
