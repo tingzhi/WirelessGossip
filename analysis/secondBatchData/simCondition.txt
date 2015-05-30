@@ -1,0 +1,17 @@
+Maximum time to spread is correct.
+But maximum hops should not always be 2, that is just wrong. Meaning there is a bug there.
+For avgerage message per node, just calculate the data packets.
+
+Simulation condition:
+1Mbps
+Turn on RTS/CTS
+802.11b
+Constant speed propagation delay model
+Friis Propagation Loss Model
+Non-Qos
+
+For random node position allocator
+deltaX: 5m
+deltaY: 5m
+GridWidth: sqrt(# of nodes)
+row first
