@@ -70,7 +70,7 @@ class result:
 		plt.subplots_adjust(left=0.15)
 		plt.show()
 
-def printCombinedResults(timeResults, hopResults):
+def printCombinedResults(timeResults, hopResults, avgMsgResults):
 	print "{:.3f}".format(timeResults.expectation),
 	print ",",
 	print "{:.3f}".format(timeResults.median),
@@ -86,9 +86,20 @@ def printCombinedResults(timeResults, hopResults):
 	print "{:.3f}".format(hopResults.median),
 	print ",",
 	print "{:.3f}".format(hopResults.stdev),
+        print ",",
 	print "{:.3f}".format(hopResults.mini),
 	print ",",
 	print "{:.3f}".format(hopResults.maxi)
+    	print ",",
+    	print "{:.3f}".format(avgMsgResults.expectation),
+    	print ",",
+    	print "{:.3f}".format(avgMsgResults.median),
+    	print ",",
+    	print "{:.3f}".format(avgMsgResults.stdev),
+    	print ",",
+    	print "{:.3f}".format(avgMsgResults.mini),
+    	print ",",
+    	print "{:.3f}".format(avgMsgResults.maxi)
 
 #	print timeResults.printResultNoText()
 
@@ -104,7 +115,7 @@ def runStats(ls):
 	return ret
 
 def main():
-	statsUtility.CheckArgs(2,"<time in file> <hops in file>")
+	statsUtility.CheckArgs(3,"<time in file> <hops in file> <avgMsg in file>")
 	templs = statsUtility.ReadFileLines(sys.argv[1])
 	spreadtime = []
 	for el in templs:
@@ -116,8 +127,14 @@ def main():
 		stripped = el.strip("\n")
 		spreadhops.append(int(stripped))
 
+   	templs = statsUtility.ReadFileLines(sys.argv[3])
+    	avgMsg = []
+    	for el in templs:
+        	avgMsg.append(float(el))
+    
 	timeResult = runStats(spreadtime)
 	hopResult = runStats(spreadhops)
+    	avgMsgResults = runStats(avgMsg)
 
 #	print "Max Time Analysis Result"
 #	timeResult.printResult("s")
@@ -125,7 +142,7 @@ def main():
 	
 #	print "Max Hops Analysis Result"
 #	hopResult.printResult("")
-	printCombinedResults(timeResult, hopResult)
+	printCombinedResults(timeResult, hopResult, avgMsgResults)
 #	timeResult.plotHistogram(int(timeResult.maxi/2)+1, "Max Time")
 #	hopResult.plotHistogram(hopResult.maxi+1, "Max Hops")
 
