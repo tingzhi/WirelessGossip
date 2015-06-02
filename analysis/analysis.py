@@ -124,8 +124,8 @@ def main():
 	templs = statsUtility.ReadFileLines(sys.argv[2])
 	spreadhops = []
 	for el in templs:
-		stripped = el.strip("\n")
-		spreadhops.append(int(stripped))
+	#	stripped = el.strip("\n")
+		spreadhops.append(float(el))
 
    	templs = statsUtility.ReadFileLines(sys.argv[3])
     	avgMsg = []
